@@ -1,11 +1,14 @@
 {
-  "name": "st-api-core-js",
+  "name": "api-core-js",
   "version": "1.0.0",
   "description": "api core",
   "main": "index.js",
   "repository": "https://github.com/yshiliang/api-core-js.git",
   "author": "y.liang",
   "license": "MIT",
+  "files": [
+    "src/**/*.ts"
+  ],
   "dependencies": {
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
