@@ -3,7 +3,7 @@ import { IApiDescriptor, IParameterDescriptor, IServiceDescriptor } from "../ser
 import * as ApiException from "./ApiException"
 
 export interface ApiContextConstructor {
-    new(...args: any[]): any;
+    new(...args: any[]): ApiContext;
 }
 export class ApiContext {
     /**
