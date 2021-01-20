@@ -5,7 +5,7 @@ import * as ApiException from "./ApiException"
 export interface ApiContextConstructor {
     new(...args: any[]): ApiContext;
 }
-export default class ApiContext {
+export class ApiContext {
     /**
      * koa 
      */

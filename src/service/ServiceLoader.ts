@@ -54,7 +54,7 @@ class ServiceDispatchMapping extends Map<string, IServiceDescriptor> {
 }
 
 type ApiParameterType = { name?: string, auto?: boolean, required?: boolean, defaultValue?: any, pathVariable?: boolean, desc?: string }
-export default class ServiceLoader {
+export class ServiceLoader {
     protected static onParseApiMetadata(api: IApiDescriptor, target: any, propertyKey: string) { }
     protected static onParseParameterMetadata(parameter: IParameterDescriptor, metadata: any) { }
 

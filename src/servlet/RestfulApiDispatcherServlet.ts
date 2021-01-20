@@ -1,10 +1,10 @@
-import ApiContext from '../common/ApiContext'
+import { ApiContext } from '../common/ApiContext'
 import { IApiDescriptor, IServiceDescriptor } from '../service/ServiceLoader'
-import AbsApiDispatcherServlet from './AbsApiDispatcherServlet'
+import { AbsApiDispatcherServlet } from './AbsApiDispatcherServlet'
 import { pathToRegexp } from 'path-to-regexp'
 import { ERROR_API_NOT_FOUND } from '../common/ApiException'
 
-export default class RestfulApiDispatcherServlet extends AbsApiDispatcherServlet {
+export class RestfulApiDispatcherServlet extends AbsApiDispatcherServlet {
     private _pathMatchLayer: { service: IServiceDescriptor, apis: IApiDescriptor[] }[] | null = null
 
     private get patchMachLayer() {

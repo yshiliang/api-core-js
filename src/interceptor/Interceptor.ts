@@ -1,4 +1,4 @@
-import ApiContext from '../common/ApiContext'
+import { ApiContext } from '../common/ApiContext'
 
 
 export class InterceptorChains {
@@ -21,7 +21,7 @@ export interface IInterceptor {
     onIntercept: (context: ApiContext, chains: InterceptorChains) => Promise<boolean>
 }
 
-export default class Interceptor {
+export class Interceptor {
     private static interceptors: IInterceptor[] = []
 
     static use(interceptor: IInterceptor) {

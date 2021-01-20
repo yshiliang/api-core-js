@@ -1,4 +1,4 @@
-export default class ApiException {
+export class ApiException {
     code: number;
     domain: string;
     message: string;

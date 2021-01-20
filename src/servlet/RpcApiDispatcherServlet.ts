@@ -1,9 +1,9 @@
-import ApiContext from '../common/ApiContext'
+import { ApiContext } from '../common/ApiContext'
 import * as ApiException from '../common/ApiException'
-import AbsApiDispatcherServlet from './AbsApiDispatcherServlet'
+import { AbsApiDispatcherServlet } from './AbsApiDispatcherServlet'
 
 
-export default class RpcApiDispatcherServlet extends AbsApiDispatcherServlet {
+export class RpcApiDispatcherServlet extends AbsApiDispatcherServlet {
     methodRequestMapping: string = '_mt'
 
     protected fillApiContext(apiContext: ApiContext): ApiContext {

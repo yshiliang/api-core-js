@@ -4,7 +4,7 @@ export interface ServletConstructor {
     new(): Servlet;
     new(...args: any[]): Servlet;
 }
-export default abstract class Servlet {
+export abstract class Servlet {
     private patterns?: Set<string>;
     get allPatterns() {
         return this.patterns

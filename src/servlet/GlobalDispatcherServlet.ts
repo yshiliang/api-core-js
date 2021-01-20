@@ -1,15 +1,15 @@
 import Router from "koa-router";
 import { ServletConstructor } from "./Servlet";
 import { IServiceDispatchMapping } from '../service/ServiceLoader'
-import Servlet from "./Servlet";
-import RpcApiDispatcherServlet from './RpcApiDispatcherServlet'
-import RestfulApiDispatcherServlet from './RestfulApiDispatcherServlet'
+import { Servlet } from "./Servlet";
+import { RpcApiDispatcherServlet } from './RpcApiDispatcherServlet'
+import { RestfulApiDispatcherServlet } from './RestfulApiDispatcherServlet'
 import { ApiContextConstructor } from "../common/ApiContext";
 import { isServlet, METADATA_SERVLET, METADATA_SERVLET_CONTEXT } from '../decorator/servlet-decorator'
 import { ApiDispatcherServletConstructor } from "./AbsApiDispatcherServlet";
 
 const DEFAULT_PATH = '/(.*)'
-export default class GlobalDispatcherServlet extends Servlet {
+export class GlobalDispatcherServlet extends Servlet {
     private servlets: Servlet[]
     private router: Router = new Router()
     private initialized: boolean = false

@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import ApiException from '../common/ApiException'
+import { ApiException } from '../common/ApiException'
 import * as Utils from '../common/utils'
 import assert from 'assert'
 import { ClassType } from '../common/types'
