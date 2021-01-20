@@ -1,6 +1,6 @@
 {
-  "name": "api-gw-js",
-  "version": "0.0.2",
+  "name": "api-gen-cli",
+  "version": "0.0.1",
   "description": "api-gw",
   "main": "./lib/index.js",
   "types": "./lib/typings/index.d.ts",
@@ -8,7 +8,11 @@
   "author": "y.liang",
   "license": "MIT",
   "dependencies": {
+    "@types/js-md5": "^0.4.2",
     "api-core-js": "^0.0.4",
-    "reflect-metadata": "^0.1.13"
+    "api-gw-js": "^0.0.2",
+    "axios": "^0.21.1",
+    "eventemitter3": "^4.0.7",
+    "js-md5": "^0.7.3"
   }
 }

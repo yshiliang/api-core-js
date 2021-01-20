@@ -1,4 +1,3 @@
 export interface ClassType {
-    new(): {};
-    new(...args: any[]): {};
+    new(...args: any[]): any;
 }
