@@ -24,8 +24,7 @@ export class TSCodeGenerator {
             fs.rmSync(dir, { recursive: true })
         }
         fs.mkdirSync(dir)
-
-        fs.copyFileSync(path.resolve(__dirname, 'define.ts'), `${dir}/define.ts`)
+        fs.copyFileSync(path.resolve(__dirname, 'Http.ts'), `${dir}/Http.ts`)
 
         //generate api
         serviceMapping.forEach(service => {
