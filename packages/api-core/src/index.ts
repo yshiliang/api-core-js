@@ -17,4 +17,6 @@ export * from './decorator/api-decorator'
 export * from './decorator/servlet-decorator'
 export * from './decorator/object-decorator'
 
+export * from './Application'
+
 

@@ -1,3 +1,5 @@
+import fs from 'fs'
+import path from 'path'
 import { ClassType } from "./types"
 
 export const isClass = (clazz: ClassType) => {
@@ -6,4 +8,14 @@ export const isClass = (clazz: ClassType) => {
 
 export const isObject = (obj: any) => {
     return typeof obj === 'object'
+}
+
+export const loadDefaultMoudles = (absDir: string): any[] => {
+    const moudles: any[] = []
+    if (fs.existsSync(absDir)) {
+        fs.readdirSync(absDir).forEach(filename => {
+            moudles.push(require(path.resolve(absDir, filename)).default)
+        })
+    }
+    return moudles
 }

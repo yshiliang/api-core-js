@@ -1,7 +1,6 @@
 import { Context } from "koa";
 
 export interface ServletConstructor {
-    new(): Servlet;
     new(...args: any[]): Servlet;
 }
 export abstract class Servlet {

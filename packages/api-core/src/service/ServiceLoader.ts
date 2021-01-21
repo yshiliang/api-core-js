@@ -1,6 +1,3 @@
-import util from 'util'
-import fs from 'fs'
-import path from 'path'
 import assert from 'assert'
 import {
     isApiService, METADATA_SERVICE,
@@ -14,6 +11,7 @@ import {
     METADATA_API_PARAMETER_GENERIC,
 } from "../decorator/api-decorator"
 import { ClassType } from '../common/types'
+import { loadDefaultMoudles } from '../common/utils'
 
 export interface IParameterDescriptor {
     name?: string;
@@ -115,14 +113,10 @@ export class ServiceLoader {
         return serviceDescriptor
     }
 
-    static loadService(serviceAbsoluateDir: string): ServiceDispatchMapping {
-        const mapping = new ServiceDispatchMapping()
-        if (fs.existsSync(serviceAbsoluateDir)) {
-            fs.readdirSync(serviceAbsoluateDir).forEach(filename => {
-                const constructor = require(path.resolve(serviceAbsoluateDir, filename)).default as ClassType
-                mapping.add(this.createServiceDescriptor(constructor))
-            })
-        }
-        return mapping
+    static serviceMapping = new ServiceDispatchMapping()
+    static loadService(absDir: string) {
+        loadDefaultMoudles(absDir).forEach(clazz => {
+            this.serviceMapping.add(this.createServiceDescriptor(clazz as ClassType))
+        })
     }
 }
