@@ -1,6 +1,6 @@
 {
   "name": "api-gen-cli",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "api-gw",
   "main": "./lib/index.js",
   "types": "./lib/typings/index.d.ts",

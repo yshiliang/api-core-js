@@ -137,8 +137,9 @@ class HTTPClient {
      * @param isAuthApi 是否为身份认证的API
      */
     private async waitingRefreshToken<T>(config: AxiosRequestConfig, isAuthApi: boolean) {
+        let promise: Promise<T>;
         if (this.isTokenRefreshing) {
-            return new Promise<T>((resovle, reject) => {
+            promise = new Promise<T>((resovle, reject) => {
                 this.eventEmitter.once(EVENT_REFRESH_TOKEN, (e: ApiError) => {
                     if (e) reject(e)
                     else resovle(this.request<T>(config, isAuthApi))
@@ -161,8 +162,19 @@ class HTTPClient {
         } catch (e) {
             this.isTokenRefreshing = false//刷新失败
             this.eventEmitter.emit(EVENT_REFRESH_TOKEN, e)
-            return Promise.reject(e)
+            promise = Promise.reject(e)
         }
+
+        return promise.catch(e => {
+            if (!(e instanceof ApiError)) {
+                e = new ApiError().withError(e)
+            }
+            const apiError = e as ApiError
+            if (this.onError) {
+                this.onError(apiError)
+            }
+            return Promise.reject(apiError)
+        })
     }
 
     /**
@@ -171,18 +183,7 @@ class HTTPClient {
      * @param isAuthApi 是否为身份认证API，若为authApi，则自动存储返回的认证【token】信息
      */
     private request = async <T>(config: AxiosRequestConfig, isAuthApi: boolean = false): Promise<T> => {
-        if (this.isTokenRefreshing) {
-            return this.waitingRefreshToken<T>(config, isAuthApi).catch(e => {
-                if (!(e instanceof ApiError)) {
-                    e = new ApiError().withError(e)
-                }
-                const apiError = e as ApiError
-                if (this.onError) {
-                    this.onError(apiError)
-                }
-                return Promise.reject(apiError)
-            })
-        }
+        if (this.isTokenRefreshing) return this.waitingRefreshToken<T>(config, isAuthApi)
 
         return this.client.request(config).then(rsp => {
             const rt = rsp.data.contents
