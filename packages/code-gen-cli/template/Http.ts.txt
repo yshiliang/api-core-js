@@ -1,5 +1,4 @@
 import Axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
-import { CommonParameter as Constants } from 'api-gw-js'
 import Qs = require('qs')
 import MD5 = require('js-md5')
 import EventEmitter = require('eventemitter3')
@@ -79,7 +78,7 @@ class HTTPClient {
                 config.baseURL = this.baseURL
                 const token = this.tokenInfo?.token
                 if (token) {
-                    config.headers[Constants.token] = token
+                    config.headers['_tk'] = token
                 }
 
                 return config
@@ -108,7 +107,7 @@ class HTTPClient {
             salt = this.tokenInfo?.secret || DEFAULT_SECURT
         }
         const raw = `${Qs.stringify(params)}${salt}`
-        return this.sign!(raw, sm)
+        return this.sign(raw, sm)
     }
 
     private sign(raw: string/**原始字符串 */, sm: string/**签名算法 hmac,md5,sha1,rsa,ecc */): string {
@@ -125,10 +124,10 @@ class HTTPClient {
 
         const _params: Params = {
             timestamp,
-            [Constants.signatureMethod]: sm,
+            '_sm': sm,
             ...(params || {})
         }
-        _params[Constants.signature] = this.signParams(_params, sm, security)
+        _params['_sig'] = this.signParams(_params, sm, security)
         return _params
     }
 
@@ -150,8 +149,8 @@ class HTTPClient {
         try {
             const refreshToken = this.tokenInfo?.refreshToken || ''
             const rsp = await this.client.post('', this.processParams({
-                [Constants.method]: API_REFRESH_TOKEN,
-                [Constants.refreshToken]: refreshToken,
+                '_mt': API_REFRESH_TOKEN,
+                '_rtk': refreshToken,
             }, 'USER_LOGIN'))
             this.tokenInfo = rsp.data.contents
             this.isTokenRefreshing = false//刷新成功

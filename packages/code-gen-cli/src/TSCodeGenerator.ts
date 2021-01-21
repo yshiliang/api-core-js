@@ -1,17 +1,17 @@
 import fs from 'fs'
 import path from 'path'
-import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor } from 'api-core-js'
+import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor, IServiceDispatchMapping } from 'api-core-js'
 import { IGwApiDescriptor, IGwParameterDescriptor } from 'api-gw-js'
-import { IServiceDispatchMapping } from "api-core-js";
 
 
 export class TSCodeGenerator {
-    private restfulApi: boolean = false
+    private restfulApi: boolean = false // 默认生成JSON-RPC风格API
     private methodKey: string = '_mt'
     private baseDir?: string
 
     /**
      * 自动生成API层代码
+     * @param serviceMapping 
      * @param dir 代码输出目录
      * @param restfulApi 是否为restful风格API， 默认为JSON-RPC风格
      * @param methodKey JSON-RPC风格API的name与请求参数映射的字段
@@ -24,7 +24,7 @@ export class TSCodeGenerator {
             fs.rmSync(dir, { recursive: true })
         }
         fs.mkdirSync(dir)
-        fs.copyFileSync(path.resolve(__dirname, 'Http.ts'), `${dir}/Http.ts`)
+        fs.copyFileSync(path.resolve(__dirname, '../template/Http.ts.txt'), `${dir}/Http.ts`)
 
         //generate api
         serviceMapping.forEach(service => {
@@ -78,7 +78,7 @@ export class TSCodeGenerator {
         const lines: string[] = []
         lines.push(this.commentLine(`auto generate code for POJO class ${POJO.name} !!! \n`))
 
-        const classGenericSet = new Set<String>()//泛型类
+        const classGenericSet = new Set<string>()//泛型类
         const fieldLines: string[] = []
         if (mapping) {
             for (const key in mapping) {
