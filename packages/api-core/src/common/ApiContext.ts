@@ -1,5 +1,5 @@
 import { Context } from "koa"
-import { IApiDescriptor, IParameterDescriptor, IServiceDescriptor } from "../service/ServiceLoader"
+import { IApiDescriptor, IParameterDescriptor, IServiceDescriptor } from "../service/types"
 import * as ApiException from "./ApiException"
 
 export interface ApiContextConstructor {

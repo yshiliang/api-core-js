@@ -1,10 +1,10 @@
 import { Context } from "koa";
 import { ApiContext, ApiContextConstructor } from '../common/ApiContext'
 import { ApiException, ERROR_API_INTERCEPTED, ERROR_API_UNKNOWN } from '../common/ApiException'
-import { IServiceDispatchMapping } from "../service/ServiceLoader";
 import { Interceptor } from "../interceptor/Interceptor";
 import { Servlet } from "./Servlet";
 import Qs from 'qs'
+import { IServiceDispatchMapping } from "../service/types";
 
 
 export abstract class AbsApiDispatcherServlet extends Servlet {

@@ -6,7 +6,6 @@ import { RpcApiDispatcherServlet } from './RpcApiDispatcherServlet'
 import { RestfulApiDispatcherServlet } from './RestfulApiDispatcherServlet'
 import { ApiContextConstructor } from "../common/ApiContext";
 import { METADATA_SERVLET, METADATA_SERVLET_CONTEXT } from '../decorator/servlet-decorator'
-import { loadDefaultMoudles } from "../common/utils";
 
 const DEFAULT_PATH = '/(.*)'
 export class GlobalDispatcherServlet extends Servlet {
