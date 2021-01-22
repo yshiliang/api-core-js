@@ -1,33 +1,42 @@
 import fs from 'fs'
 import path from 'path'
-import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor, IServiceDispatchMapping } from 'api-core-js'
-import { IGwApiDescriptor, IGwParameterDescriptor } from 'api-gw-js'
+import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor } from 'api-core-js'
+import { CommonParameter, GwServiceLoader, IGwApiDescriptor, IGwParameterDescriptor } from 'api-gw-js'
 
 
 export class TSCodeGenerator {
     private restfulApi: boolean = false // 默认生成JSON-RPC风格API
-    private methodKey: string = '_mt'
-    private baseDir?: string
+    private methodKey: string = CommonParameter.method
+    private outputDir?: string
 
     /**
      * 自动生成API层代码
-     * @param serviceMapping 
-     * @param dir 代码输出目录
+     * @param outputDir 代码输出目录
      * @param restfulApi 是否为restful风格API， 默认为JSON-RPC风格
-     * @param methodKey JSON-RPC风格API的name与请求参数映射的字段
      */
-    generate(serviceMapping: IServiceDispatchMapping, dir: string, restfulApi?: boolean, methodKey?: string) {
-        this.baseDir = dir
-        if (methodKey) this.methodKey = methodKey
+    generate(outputDir: string, restfulApi?: boolean) {
+        this.outputDir = outputDir
         if (restfulApi) this.restfulApi = restfulApi
-        if (fs.existsSync(dir)) {
-            fs.rmSync(dir, { recursive: true })
+        if (fs.existsSync(outputDir)) {
+            fs.rmSync(outputDir, { recursive: true })
         }
-        fs.mkdirSync(dir)
-        fs.copyFileSync(path.resolve(__dirname, '../template/Http.ts.txt'), `${dir}/Http.ts`)
+        fs.mkdirSync(outputDir)
+
+        const constants = {}
+        const o = Object.getOwnPropertyDescriptors(CommonParameter)
+        Reflect.ownKeys(o).forEach(key => {
+            if (typeof key === 'string') {
+                const descriptor = o[key]
+                if (descriptor.enumerable && descriptor.writable && typeof descriptor.value === 'string') {
+                    constants[key] = descriptor.value
+                }
+            }
+        })
+        fs.writeFileSync(`${outputDir}/Constants.ts`, `export default ${JSON.stringify(constants, null, '\t')}`, { encoding: 'utf-8' })
+        fs.copyFileSync(path.resolve(__dirname, '../template/Http.ts.txt'), `${outputDir}/Http.ts`)
 
         //generate api
-        serviceMapping.forEach(service => {
+        GwServiceLoader.serviceMapping.forEach(service => {
             const lines: string[] = []
             lines.push(this.commentLine(`auto generate code for ${service.domain} !!!\n`))
             this.getPOJORefrence(service).forEach(POJO => {
@@ -35,8 +44,10 @@ export class TSCodeGenerator {
                 lines.push(`import ${POJO.name} from './POJO/${POJO.name}'`)
             })
             lines.push(...this.serviceLines(service))
-            this.writeLines(`${dir}/${service.domain}Service.ts`, lines)
+            this.writeLines(`${outputDir}/${service.domain}Service.ts`, lines)
         })
+
+        console.log('api generate finished!')
     }
 
     /**
@@ -65,7 +76,7 @@ export class TSCodeGenerator {
      */
     private generatePOJO(POJO: ClassType) {
         if (!isPOJO(POJO)) return
-        const pojoDir = path.resolve(this.baseDir || __dirname, 'POJO')
+        const pojoDir = path.resolve(this.outputDir || __dirname, 'POJO')
         if (!fs.existsSync(pojoDir)) {
             fs.mkdirSync(pojoDir, { recursive: true })
         }

@@ -1,12 +1,13 @@
 import 'reflect-metadata'
 import { CommonParameter } from './CommonParameter';
 import { Param } from 'api-core-js';
+import { Security } from './types';
 
 
 export const METADATA_API_SECURITY = Symbol('api.security')
 
 export namespace Gateway {
-    export const security = (security: string): MethodDecorator => {
+    export const security = (security: Security): MethodDecorator => {
         return (target, propertyKey, descriptor) => {
             // console.log('METADATA_API_SECURITY ==> ', security, propertyKey)
             Reflect.defineMetadata(METADATA_API_SECURITY, security, target, propertyKey)

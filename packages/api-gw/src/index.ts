@@ -1,3 +1,4 @@
+export * from './types'
 export * from './CommonParameter'
 export * from './gw-decorator'
 export * from './GwApiContext'

@@ -2,6 +2,8 @@ import Axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
 import Qs = require('qs')
 import MD5 = require('js-md5')
 import EventEmitter = require('eventemitter3')
+import Constants from './Constants'
+// import { CommonParameter as Constants } from 'api-gw-js'
 
 class ApiError {
     code: number;
@@ -78,7 +80,7 @@ class HTTPClient {
                 config.baseURL = this.baseURL
                 const token = this.tokenInfo?.token
                 if (token) {
-                    config.headers['_tk'] = token
+                    config.headers[Constants.token] = token
                 }
 
                 return config
@@ -124,10 +126,10 @@ class HTTPClient {
 
         const _params: Params = {
             timestamp,
-            '_sm': sm,
+            [Constants.signatureMethod]: sm,
             ...(params || {})
         }
-        _params['_sig'] = this.signParams(_params, sm, security)
+        _params[Constants.signature] = this.signParams(_params, sm, security)
         return _params
     }
 
@@ -145,24 +147,25 @@ class HTTPClient {
                     else resovle(this.request<T>(config, isAuthApi))
                 })
             })
-        }
-        this.isTokenRefreshing = true
-        try {
-            const refreshToken = this.tokenInfo?.refreshToken || ''
-            const rsp = await this.client.post('', this.processParams({
-                '_mt': API_REFRESH_TOKEN,
-                '_rtk': refreshToken,
-            }, 'USER_LOGIN'))
-            this.tokenInfo = rsp.data.contents
-            this.isTokenRefreshing = false//刷新成功
-            setTimeout(() => {
-                this.eventEmitter.emit(EVENT_REFRESH_TOKEN)
-            }, 0);
-            return this.request<T>(config, isAuthApi)
-        } catch (e) {
-            this.isTokenRefreshing = false//刷新失败
-            this.eventEmitter.emit(EVENT_REFRESH_TOKEN, e)
-            promise = Promise.reject(e)
+        } else {
+            this.isTokenRefreshing = true
+            try {
+                const refreshToken = this.tokenInfo?.refreshToken || ''
+                const rsp = await this.client.post('', this.processParams({
+                    [Constants.method]: API_REFRESH_TOKEN,
+                    [Constants.refreshToken]: refreshToken,
+                }, 'USER_LOGIN'))
+                this.tokenInfo = rsp.data.contents
+                this.isTokenRefreshing = false//刷新成功
+                setTimeout(() => {
+                    this.eventEmitter.emit(EVENT_REFRESH_TOKEN)
+                }, 0);
+                return this.request<T>(config, isAuthApi)
+            } catch (e) {
+                this.isTokenRefreshing = false//刷新失败
+                this.eventEmitter.emit(EVENT_REFRESH_TOKEN, e)
+                promise = Promise.reject(e)
+            }
         }
 
         return promise.catch(e => {

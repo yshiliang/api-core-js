@@ -1,7 +1,7 @@
 import { Context } from "koa"
 import { ApiContext, JSON, fieldMapping, fieldNames, fillObject } from 'api-core-js'
 import { CommonParameter } from "./CommonParameter"
-import { IGwParameterDescriptor } from './GwServiceLoader'
+import { IGwParameterDescriptor } from "./types"
 
 export class GwApiContext extends ApiContext {
     /**

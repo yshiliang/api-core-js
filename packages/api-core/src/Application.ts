@@ -9,6 +9,7 @@ import { Servlet } from './servlet/Servlet'
 export interface ConfigOptions {
     useKoaMiddleware?: (app: Koa) => void;
     interceptorDir?: string;
+
     //service
     serviceDir?: string;
     serviceLoader?: IServiceLoader;
@@ -29,7 +30,7 @@ export class Application {
         this.configOptions = options || {}
     }
 
-    startListen(port?: number, listeningListener?: () => void, onerror?: (err: Error) => void) {
+    startListen(port?: number, listeningListener?: () => void) {
         //加载拦截器
         if (this.configOptions.interceptorDir) Interceptor.loadInterceptors(this.configOptions.interceptorDir)
 
