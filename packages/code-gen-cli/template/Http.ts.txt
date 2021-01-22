@@ -2,8 +2,16 @@ import Axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
 import Qs = require('qs')
 import MD5 = require('js-md5')
 import EventEmitter = require('eventemitter3')
-import Constants from './Constants'
-// import { CommonParameter as Constants } from 'api-gw-js'
+
+//FOR release
+import { CommonParameter, DEFAULT_SECURT, API_REFRESH_TOKEN } from './Constants'
+
+
+
+//FOR develop
+// import { CommonParameter } from 'api-gw-js'
+// const DEFAULT_SECURT = '123456'
+// const API_REFRESH_TOKEN = 'User.refreshToken'
 
 class ApiError {
     code: number;
@@ -30,9 +38,7 @@ type TokenInfo = { token: string, secret: string, refreshToken: string }
 const K_LOCAL_TOKEN = 'httpclient.K_LOCAL_TOKEN'
 const K_LOCAL_REFRESH_TOKEN = 'httpclient.K_LOCAL_REFRESH_TOKEN'
 const K_LOCAL_SECRET = 'httpclient.K_LOCAL_SECRET'
-const DEFAULT_SECURT = '1234567890!@#$%^&*()'
-const API_REFRESH_TOKEN = 'User.refreshToken'
-const EVENT_REFRESH_TOKEN = 'refreshToken'
+const EVENT_REFRESH_TOKEN = 'EVENT_REFRESH_TOKEN'
 
 class HTTPClient {
     private _tokenInfo: TokenInfo | null = null
@@ -80,7 +86,7 @@ class HTTPClient {
                 config.baseURL = this.baseURL
                 const token = this.tokenInfo?.token
                 if (token) {
-                    config.headers[Constants.token] = token
+                    config.headers[CommonParameter.token] = token
                 }
 
                 return config
@@ -126,10 +132,10 @@ class HTTPClient {
 
         const _params: Params = {
             timestamp,
-            [Constants.signatureMethod]: sm,
+            [CommonParameter.signatureMethod]: sm,
             ...(params || {})
         }
-        _params[Constants.signature] = this.signParams(_params, sm, security)
+        _params[CommonParameter.signature] = this.signParams(_params, sm, security)
         return _params
     }
 
@@ -152,8 +158,8 @@ class HTTPClient {
             try {
                 const refreshToken = this.tokenInfo?.refreshToken || ''
                 const rsp = await this.client.post('', this.processParams({
-                    [Constants.method]: API_REFRESH_TOKEN,
-                    [Constants.refreshToken]: refreshToken,
+                    [CommonParameter.method]: API_REFRESH_TOKEN,
+                    [CommonParameter.refreshToken]: refreshToken,
                 }, 'USER_LOGIN'))
                 this.tokenInfo = rsp.data.contents
                 this.isTokenRefreshing = false//刷新成功
@@ -199,7 +205,7 @@ class HTTPClient {
 
             //refresh token
             const apiError = e as ApiError
-            if (apiError.domain === 'API' && apiError.code === 406) {
+            if (apiError.domain === 'API' && apiError.code === 406 && API_REFRESH_TOKEN) {
                 return this.waitingRefreshToken<T>(config, isAuthApi)
             }
             if (this.onError) {

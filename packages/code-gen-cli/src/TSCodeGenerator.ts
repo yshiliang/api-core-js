@@ -14,7 +14,7 @@ export class TSCodeGenerator {
      * @param outputDir 代码输出目录
      * @param restfulApi 是否为restful风格API， 默认为JSON-RPC风格
      */
-    generate(outputDir: string, restfulApi?: boolean) {
+    generate(outputDir: string, defaultSecurt?: string, refreshTokenApi?: string, restfulApi?: boolean) {
         this.outputDir = outputDir
         if (restfulApi) this.restfulApi = restfulApi
         if (fs.existsSync(outputDir)) {
@@ -22,17 +22,7 @@ export class TSCodeGenerator {
         }
         fs.mkdirSync(outputDir)
 
-        const constants = {}
-        const o = Object.getOwnPropertyDescriptors(CommonParameter)
-        Reflect.ownKeys(o).forEach(key => {
-            if (typeof key === 'string') {
-                const descriptor = o[key]
-                if (descriptor.enumerable && descriptor.writable && typeof descriptor.value === 'string') {
-                    constants[key] = descriptor.value
-                }
-            }
-        })
-        fs.writeFileSync(`${outputDir}/Constants.ts`, `export default ${JSON.stringify(constants, null, '\t')}`, { encoding: 'utf-8' })
+        this.generateConstants(defaultSecurt, refreshTokenApi)
         fs.copyFileSync(path.resolve(__dirname, '../template/Http.ts.txt'), `${outputDir}/Http.ts`)
 
         //generate api
@@ -48,6 +38,23 @@ export class TSCodeGenerator {
         })
 
         console.log('api generate finished!')
+    }
+
+    private generateConstants(defaultSecurt?: string, refreshTokenApi?: string) {
+        const commonParameter = {}
+        const o = Object.getOwnPropertyDescriptors(CommonParameter)
+        Reflect.ownKeys(o).forEach(key => {
+            if (typeof key === 'string') {
+                const descriptor = o[key]
+                if (descriptor.enumerable && descriptor.writable && typeof descriptor.value === 'string') {
+                    commonParameter[key] = descriptor.value
+                }
+            }
+        })
+        const constantsFile = `${this.outputDir}/Constants.ts`
+        fs.writeFileSync(constantsFile, `export const CommonParameter = ${JSON.stringify(commonParameter, null, '\t')}`)
+        fs.appendFileSync(constantsFile, `\n\nexport const DEFAULT_SECURT = '${defaultSecurt || ''}'`)
+        fs.appendFileSync(constantsFile, `\n\nexport const API_REFRESH_TOKEN = '${refreshTokenApi || ''}'`)
     }
 
     /**
