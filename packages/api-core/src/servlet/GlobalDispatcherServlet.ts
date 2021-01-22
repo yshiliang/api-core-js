@@ -2,10 +2,9 @@ import Router from "koa-router";
 import { ServletConstructor } from "./Servlet";
 import { ServiceLoader } from '../service/ServiceLoader'
 import { Servlet } from "./Servlet";
-import { RpcApiDispatcherServlet } from './RpcApiDispatcherServlet'
-import { RestfulApiDispatcherServlet } from './RestfulApiDispatcherServlet'
 import { ApiContextConstructor } from "../common/ApiContext";
-import { METADATA_SERVLET, METADATA_SERVLET_CONTEXT } from '../decorator/servlet-decorator'
+import { isServlet, METADATA_SERVLET, METADATA_SERVLET_CONTEXT } from '../decorator/servlet-decorator'
+import { isClass, loadDefaultMoudles } from "../common/utils";
 
 const DEFAULT_PATH = '/(.*)'
 export class GlobalDispatcherServlet extends Servlet {
@@ -44,37 +43,41 @@ export class GlobalDispatcherServlet extends Servlet {
         this.servlets.push(servlet.addPattern(pattern))
     }
 
-    loadServletConstructor(constructor: ServletConstructor, params?: any[]): this {
-        const pattern: string = Reflect.getMetadata(METADATA_SERVLET, constructor)
-        //将api dispatcher servlet相关构造参数放到原有参数之后
-        const apiContextConstructor: ApiContextConstructor | undefined = Reflect.getMetadata(METADATA_SERVLET_CONTEXT, constructor)
-        const aParams = [ServiceLoader.serviceMapping, apiContextConstructor]
-        params = params ? [...params, ...aParams] : aParams
-        this.addServlet(new constructor(...params).addPattern(pattern))
+    addServlets(servlets: Servlet[]) {
+        servlets?.forEach(servlet => {
+            this.addServlet(servlet)
+        })
+    }
+
+    /**
+     * 加载被@Servlet修饰过的Servlet子类
+     * @param constructor 
+     * @param params 
+     * 为了确保ApiDispatcherServlet的正常构造，
+     * 应该首先保证serviceMapping加载完成后，再将serviceMapping及ApiContext相关构造参数放到原有参数之后
+     */
+    loadServlet(constructor: ServletConstructor, params?: any[]): this {
+        if (isClass(constructor) && isServlet(constructor)) {
+            const pattern: string = Reflect.getMetadata(METADATA_SERVLET, constructor)
+            //ApiDispatcherServlet
+            const apiContextConstructor: ApiContextConstructor | undefined = Reflect.getMetadata(METADATA_SERVLET_CONTEXT, constructor)
+            const aParams = [ServiceLoader.serviceMapping, apiContextConstructor]
+            params = params ? [...params, ...aParams] : aParams
+            this.addServlet(new constructor(...params).addPattern(pattern))
+        }
+
         return this
     }
 
-    loadServletConstructors(constructors: ServletConstructor[], params?: any[]): this {
-        constructors?.forEach((constructor, index) => {
-            let args = undefined
-            if (params) {
-                args = params[index]
-            }
-            this.loadServletConstructor(constructor, args)
+    /**
+     * 从目录加载servlets
+     * @param absDir 
+     */
+    loadServlets(absDir: string): this {
+        loadDefaultMoudles(absDir).forEach(constructor => {
+            this.loadServlet(constructor)
         })
         return this
-    }
-
-    static createGlobalDispatcher(servlets?: Servlet[]) {
-        return new GlobalDispatcherServlet(servlets)
-    }
-
-    static createGlobalRpcApiDispatcher(pattern: string = DEFAULT_PATH, constructor?: ApiContextConstructor) {
-        return this.createGlobalDispatcher().addServlet(new RpcApiDispatcherServlet(ServiceLoader.serviceMapping, constructor), pattern)
-    }
-
-    static createGlobalRestfulApiDispatcher(pattern: string = DEFAULT_PATH) {
-        return this.createGlobalDispatcher().addServlet(new RestfulApiDispatcherServlet(ServiceLoader.serviceMapping), pattern)
     }
 }
 

@@ -4,7 +4,7 @@ export interface ServletConstructor {
     new(...args: any[]): Servlet;
 }
 export abstract class Servlet {
-    private patterns?: Set<string>;
+    private patterns?: Set<string>;//支持多对一路由映射
     get allPatterns() {
         return this.patterns
     }

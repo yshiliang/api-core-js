@@ -1,4 +1,6 @@
 import assert from 'assert'
+import util from 'util'
+
 import {
     isApiService, METADATA_SERVICE,
     METADATA_API_DESC, METADATA_API_NAME,
@@ -25,11 +27,14 @@ class ServiceDispatchMapping extends Map<string, IServiceDescriptor> implements 
 }
 type ApiParameterType = { name?: string, auto?: boolean, required?: boolean, defaultValue?: any, pathVariable?: boolean, desc?: string }
 
-export class ServiceLoader {
-    protected static onParseApiMetadata(api: IApiDescriptor, target: any, propertyKey: string) { }
-    protected static onParseParameterMetadata(parameter: IParameterDescriptor, metadata: any) { }
+export interface IServiceLoader {
+    loadServices(absDir: string): void;
+}
+export class ServiceLoader implements IServiceLoader {
+    protected onParseApiMetadata(api: IApiDescriptor, target: any, propertyKey: string) { }
+    protected onParseParameterMetadata(parameter: IParameterDescriptor, metadata: any) { }
 
-    private static createServiceDescriptor(constructor: ClassType): IServiceDescriptor | null {
+    private createServiceDescriptor(constructor: ClassType): IServiceDescriptor | null {
         if (!isApiService(constructor)) return null
         const service = new constructor()
         const domain = Reflect.getMetadata(METADATA_SERVICE, constructor)
@@ -86,10 +91,19 @@ export class ServiceLoader {
         return serviceDescriptor
     }
 
+    /**
+     * service映射表
+     * 由所有子类共享
+     */
     static serviceMapping = new ServiceDispatchMapping()
-    static loadService(absDir: string) {
+
+    /**
+     * 从目录加载service
+     * @param absDir 
+     */
+    loadServices(absDir: string) {
         loadDefaultMoudles(absDir).forEach(clazz => {
-            this.serviceMapping.add(this.createServiceDescriptor(clazz as ClassType))
+            ServiceLoader.serviceMapping.add(this.createServiceDescriptor(clazz as ClassType))
         })
     }
 }
