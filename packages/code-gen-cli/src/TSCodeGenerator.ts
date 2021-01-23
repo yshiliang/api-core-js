@@ -2,27 +2,31 @@ import fs from 'fs'
 import path from 'path'
 import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor } from 'api-core-js'
 import { CommonParameter, GwServiceLoader, IGwApiDescriptor, IGwParameterDescriptor } from 'api-gw-js'
+import { AxiosRequestConfig } from 'axios'
 
 
 export class TSCodeGenerator {
-    private restfulApi: boolean = false // 默认生成JSON-RPC风格API
-    private methodKey: string = CommonParameter.method
-    private outputDir?: string
+    private isRestfulApi: boolean = false // 默认生成JSON-RPC风格API
+    private outputDir?: string //代码输出目录
+    private refreshTokenApiName?: string //刷新token的apiName
 
     /**
      * 自动生成API层代码
      * @param outputDir 代码输出目录
-     * @param restfulApi 是否为restful风格API， 默认为JSON-RPC风格
+     * @param defaultSecurt 默认加签秘钥
+     * @param refreshTokenApiName refreshTokenApiName
+     * @param isRestfulApi 是否为restful风格API， 默认为JSON-RPC风格
      */
-    generate(outputDir: string, defaultSecurt?: string, refreshTokenApi?: string, restfulApi?: boolean) {
+    generate(outputDir: string, defaultSecurt?: string, refreshTokenApiName?: string, isRestfulApi?: boolean) {
         this.outputDir = outputDir
-        if (restfulApi) this.restfulApi = restfulApi
+        if (isRestfulApi) this.isRestfulApi = isRestfulApi
+        this.refreshTokenApiName = refreshTokenApiName
         if (fs.existsSync(outputDir)) {
             fs.rmSync(outputDir, { recursive: true })
         }
         fs.mkdirSync(outputDir)
 
-        this.generateConstants(defaultSecurt, refreshTokenApi)
+        this.generateConstants(defaultSecurt)
         fs.copyFileSync(path.resolve(__dirname, '../template/Http.ts.txt'), `${outputDir}/Http.ts`)
 
         //generate api
@@ -40,7 +44,7 @@ export class TSCodeGenerator {
         console.log('api generate finished!')
     }
 
-    private generateConstants(defaultSecurt?: string, refreshTokenApi?: string) {
+    private generateConstants(defaultSecurt?: string) {
         const commonParameter = {}
         const o = Object.getOwnPropertyDescriptors(CommonParameter)
         Reflect.ownKeys(o).forEach(key => {
@@ -54,7 +58,8 @@ export class TSCodeGenerator {
         const constantsFile = `${this.outputDir}/Constants.ts`
         fs.writeFileSync(constantsFile, `export const CommonParameter = ${JSON.stringify(commonParameter, null, '\t')}`)
         fs.appendFileSync(constantsFile, `\n\nexport const DEFAULT_SECURT = '${defaultSecurt || ''}'`)
-        fs.appendFileSync(constantsFile, `\n\nexport const API_REFRESH_TOKEN = '${refreshTokenApi || ''}'`)
+
+        fs.writeFileSync(`${this.outputDir}/RefreshTokenApiConfig.ts`, `export const REFRESH_TOKEN_API_CONFIG = null`)
     }
 
     /**
@@ -227,19 +232,31 @@ export class TSCodeGenerator {
         })
 
         let url = ''
-        if (!this.restfulApi) {
-            params.push(`${this.methodKey}: '${api.name}'`)
+        if (!this.isRestfulApi) {
+            params.push(`${CommonParameter.method}: '${api.name}'`)
         } else {
             url = `${prePath}${api.path}`
+        }
+
+        if (api.name === this.refreshTokenApiName) {
+            const constantsFile = `${this.outputDir}/RefreshTokenApiConfig.ts`
+            const config: AxiosRequestConfig = {}
+            if (this.isRestfulApi) {
+                config.url = url
+            } else {
+                config.data = {
+                    [CommonParameter.method]: api.name
+                }
+            }
+            fs.writeFileSync(constantsFile, `export const REFRESH_TOKEN_API_CONFIG = ${JSON.stringify(config, null, '\t')}`)
         }
 
         const paramsStr = `{ ${params.join(', ')} }`
         lines.push('')
         lines.push(...this.multiCommments(comments, '\t'))
 
-        const isAuthApi = type?.name === 'TokenInfo'
         lines.push(`\tstatic ${methodName}(${paramDef.join(', ')}) {`)
-        lines.push(`\t\treturn HTTP.${api.httpMethod || 'GET'}<${returnTypeStr}>('${url}', ${paramsStr}, '${(<IGwApiDescriptor>api).security}'${isAuthApi ? ', true' : ''})`)
+        lines.push(`\t\treturn HTTP.${api.httpMethod || 'GET'}<${returnTypeStr}>('${url}', ${paramsStr}, '${(<IGwApiDescriptor>api).security}')`)
         lines.push('\t}')
         return lines
     }
@@ -253,7 +270,7 @@ export class TSCodeGenerator {
     private serviceLines(service: IServiceDescriptor): string[] {
         const lines: string[] = []
         lines.push(...this.startServiceToken(service))
-        if (this.restfulApi) {
+        if (this.isRestfulApi) {
             service.restfulApis?.forEach(api => {
                 lines.push(...this.apiToken(api, service.path))
             })

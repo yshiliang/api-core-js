@@ -4,14 +4,13 @@ import MD5 = require('js-md5')
 import EventEmitter = require('eventemitter3')
 
 //FOR release
-import { CommonParameter, DEFAULT_SECURT, API_REFRESH_TOKEN } from './Constants'
-
-
+import { CommonParameter, DEFAULT_SECURT, REFRESH_TOKEN_API_CONFIG } from './Constants'
+import { REFRESH_TOKEN_API_CONFIG } from './RefreshTokenApiConfig'
 
 //FOR develop
 // import { CommonParameter } from 'api-gw-js'
 // const DEFAULT_SECURT = '123456'
-// const API_REFRESH_TOKEN = 'User.refreshToken'
+// const REFRESH_TOKEN_API_CONFIG = {}
 
 class ApiError {
     code: number;
@@ -34,6 +33,7 @@ class ApiError {
 type SECURITY = 'NONE' | 'DEVICE_REGISTER' | 'USER_LOGIN'
 type Params = { [k: string]: any }
 type TokenInfo = { token: string, secret: string, refreshToken: string }
+const isTokenInfo = (obj: any) => obj && obj.token && obj.secret && obj.refreshToken
 
 const K_LOCAL_TOKEN = 'httpclient.K_LOCAL_TOKEN'
 const K_LOCAL_REFRESH_TOKEN = 'httpclient.K_LOCAL_REFRESH_TOKEN'
@@ -118,7 +118,12 @@ class HTTPClient {
         return this.sign(raw, sm)
     }
 
-    private sign(raw: string/**原始字符串 */, sm: string/**签名算法 hmac,md5,sha1,rsa,ecc */): string {
+    /**
+     * 
+     * @param raw 原始字符串
+     * @param sm 签名算法 hmac,md5,sha1,rsa,ecc
+     */
+    private sign(raw: string, sm: string): string {
         if (sm === 'sha1') {
             //TODO
         }
@@ -142,31 +147,33 @@ class HTTPClient {
     /**
      * 刷新token
      * @param config axios config
-     * @param isAuthApi 是否为身份认证的API
      */
-    private async waitingRefreshToken<T>(config: AxiosRequestConfig, isAuthApi: boolean) {
+    private async waitingRefreshToken<T>(config: AxiosRequestConfig) {
         let promise: Promise<T>;
         if (this.isTokenRefreshing) {
             promise = new Promise<T>((resovle, reject) => {
                 this.eventEmitter.once(EVENT_REFRESH_TOKEN, (e: ApiError) => {
                     if (e) reject(e)
-                    else resovle(this.request<T>(config, isAuthApi))
+                    else resovle(this.request<T>(config))
                 })
             })
         } else {
             this.isTokenRefreshing = true
             try {
                 const refreshToken = this.tokenInfo?.refreshToken || ''
-                const rsp = await this.client.post('', this.processParams({
-                    [CommonParameter.method]: API_REFRESH_TOKEN,
+                const config = { ...REFRESH_TOKEN_API_CONFIG } as AxiosRequestConfig
+                config.data = this.processParams({
                     [CommonParameter.refreshToken]: refreshToken,
-                }, 'USER_LOGIN'))
+                    ...(config.data || {})
+                }, 'USER_LOGIN')
+
+                const rsp = await this.client.request(config)
                 this.tokenInfo = rsp.data.contents
                 this.isTokenRefreshing = false//刷新成功
                 setTimeout(() => {
                     this.eventEmitter.emit(EVENT_REFRESH_TOKEN)
                 }, 0);
-                return this.request<T>(config, isAuthApi)
+                return this.request<T>(config)
             } catch (e) {
                 this.isTokenRefreshing = false//刷新失败
                 this.eventEmitter.emit(EVENT_REFRESH_TOKEN, e)
@@ -187,16 +194,17 @@ class HTTPClient {
     }
 
     /**
-     * 
+     * base request
      * @param config 
-     * @param isAuthApi 是否为身份认证API，若为authApi，则自动存储返回的认证【token】信息
      */
-    private request = async <T>(config: AxiosRequestConfig, isAuthApi: boolean = false): Promise<T> => {
-        if (this.isTokenRefreshing) return this.waitingRefreshToken<T>(config, isAuthApi)
+    private request = async <T>(config: AxiosRequestConfig): Promise<T> => {
+        if (this.isTokenRefreshing) return this.waitingRefreshToken<T>(config)
 
         return this.client.request(config).then(rsp => {
             const rt = rsp.data.contents
-            if (isAuthApi) this.tokenInfo = rt
+            if (isTokenInfo(rt)) {
+                this.tokenInfo = rt
+            }
             return rt
         }).catch(e => {
             if (!(e instanceof ApiError)) {
@@ -205,8 +213,8 @@ class HTTPClient {
 
             //refresh token
             const apiError = e as ApiError
-            if (apiError.domain === 'API' && apiError.code === 406 && API_REFRESH_TOKEN) {
-                return this.waitingRefreshToken<T>(config, isAuthApi)
+            if (apiError.domain === 'API' && apiError.code === 406 && REFRESH_TOKEN_API_CONFIG) {
+                return this.waitingRefreshToken<T>(config)
             }
             if (this.onError) {
                 this.onError(apiError)
@@ -220,14 +228,13 @@ class HTTPClient {
      * @param url 
      * @param params 
      * @param security API安全等级
-     * @param isAuthApi 是否为身份认证API 默认为false
      */
-    GET = <T = any>(url?: string, params?: Params, security?: SECURITY, isAuthApi: boolean = false): Promise<T> => {
+    GET = <T = any>(url?: string, params?: Params, security?: SECURITY): Promise<T> => {
         return this.request({
             method: 'get',
             url,
             params: this.processParams(params, security),
-        }, isAuthApi)
+        })
     }
 
     /**
@@ -235,14 +242,13 @@ class HTTPClient {
      * @param url 
      * @param data 
      * @param security API安全等级
-     * @param isAuthApi 是否为身份认证API 默认为false
      */
-    POST = <T = any>(url?: string, data?: Params, security?: SECURITY, isAuthApi: boolean = false): Promise<T> => {
+    POST = <T = any>(url?: string, data?: Params, security?: SECURITY): Promise<T> => {
         return this.request({
             method: 'post',
             url,
             data: this.processParams(data, security)
-        }, isAuthApi)
+        })
     }
 
     /**
