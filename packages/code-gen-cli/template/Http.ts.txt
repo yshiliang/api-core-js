@@ -4,8 +4,8 @@ import MD5 = require('js-md5')
 import EventEmitter = require('eventemitter3')
 
 //FOR release
-import { CommonParameter, DEFAULT_SECURT, REFRESH_TOKEN_API_CONFIG } from './Constants'
-import { REFRESH_TOKEN_API_CONFIG } from './RefreshTokenApiConfig'
+import { CommonParameter, DEFAULT_SECURT } from './Constants'
+import { REFRESH_TOKEN_API_CONFIG } from './RefreshToken'
 
 //FOR develop
 // import { CommonParameter } from 'api-gw-js'

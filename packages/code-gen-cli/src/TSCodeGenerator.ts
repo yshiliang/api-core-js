@@ -59,7 +59,7 @@ export class TSCodeGenerator {
         fs.writeFileSync(constantsFile, `export const CommonParameter = ${JSON.stringify(commonParameter, null, '\t')}`)
         fs.appendFileSync(constantsFile, `\n\nexport const DEFAULT_SECURT = '${defaultSecurt || ''}'`)
 
-        fs.writeFileSync(`${this.outputDir}/RefreshTokenApiConfig.ts`, `export const REFRESH_TOKEN_API_CONFIG = null`)
+        fs.writeFileSync(`${this.outputDir}/RefreshToken.ts`, `export const REFRESH_TOKEN_API_CONFIG = null`)
     }
 
     /**
@@ -239,7 +239,7 @@ export class TSCodeGenerator {
         }
 
         if (api.name === this.refreshTokenApiName) {
-            const constantsFile = `${this.outputDir}/RefreshTokenApiConfig.ts`
+            const constantsFile = `${this.outputDir}/RefreshToken.ts`
             const config: AxiosRequestConfig = {}
             if (this.isRestfulApi) {
                 config.url = url
