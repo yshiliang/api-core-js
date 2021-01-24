@@ -28,9 +28,11 @@ export class Application {
         this.koa = new Koa().use(bodyParser())
         this.dispatcher = new GlobalDispatcherServlet()
         this.configOptions = options || {}
+
+        if (this.configOptions.useKoaMiddleware) this.configOptions.useKoaMiddleware(this.koa)
     }
 
-    startListen(port?: number, listeningListener?: () => void) {
+    startListen(port?: number, listeningListener?: () => void): this {
         //加载拦截器
         if (this.configOptions.interceptorDir) Interceptor.loadInterceptors(this.configOptions.interceptorDir)
 
@@ -44,10 +46,9 @@ export class Application {
         if (this.configOptions.servlets) this.dispatcher.addServlets(this.configOptions.servlets)
         if (this.configOptions.servletDir) this.dispatcher.loadServlets(this.configOptions.servletDir)
 
-        if (this.configOptions.useKoaMiddleware) this.configOptions.useKoaMiddleware(this.koa)
-
-        //use router dispatch
+        //use router dispatch and start listen
         this.koa.use(this.dispatcher.dispatch())
         this.koa.listen(port, listeningListener)
+        return this
     }
 }

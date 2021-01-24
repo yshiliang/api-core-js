@@ -1,14 +1,19 @@
 import fs from 'fs'
 import path from 'path'
 import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor } from 'api-core-js'
-import { CommonParameter, GwServiceLoader, IGwApiDescriptor, IGwParameterDescriptor } from 'api-gw-js'
+import { CommonParameter, GwApplication, GwServiceLoader, IGwApiDescriptor, IGwParameterDescriptor } from 'api-gw-js'
 import { AxiosRequestConfig } from 'axios'
 
 
 export class TSCodeGenerator {
+    private application: GwApplication
     private isRestfulApi: boolean = false // 默认生成JSON-RPC风格API
     private outputDir?: string //代码输出目录
     private refreshTokenApiName?: string //刷新token的apiName
+
+    constructor(app: GwApplication) {
+        this.application = app
+    }
 
     /**
      * 自动生成API层代码
