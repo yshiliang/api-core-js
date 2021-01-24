@@ -162,6 +162,7 @@ class HTTPClient {
             try {
                 const refreshToken = this.tokenInfo?.refreshToken || ''
                 const config = { ...REFRESH_TOKEN_API_CONFIG } as AxiosRequestConfig
+                config.method = 'post'
                 config.data = this.processParams({
                     [CommonParameter.refreshToken]: refreshToken,
                     ...(config.data || {})
