@@ -15,6 +15,7 @@ import {
 import { ClassType } from '../common/types'
 import { loadDefaultMoudles } from '../common/utils'
 import { IApiDescriptor, IParameterDescriptor, IServiceDescriptor, IServiceDispatchMapping } from './types'
+import { DLogger } from '../common/DLogger'
 
 
 class ServiceDispatchMapping extends Map<string, IServiceDescriptor> implements IServiceDispatchMapping {
@@ -87,7 +88,7 @@ export class ServiceLoader implements IServiceLoader {
             }
         })
 
-        // console.log(`------${domain} service is =>`, util.inspect(serviceDescriptor, { depth: 10 }))
+        DLogger.log(`------${domain} service is =>`, util.inspect(serviceDescriptor, { depth: 10 }))
         return serviceDescriptor
     }
 

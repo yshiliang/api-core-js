@@ -1,6 +1,7 @@
 import { Context } from "koa"
 import { IApiDescriptor, IParameterDescriptor, IServiceDescriptor } from "../service/types"
 import * as ApiException from "./ApiException"
+import { DLogger } from "./DLogger"
 
 export interface ApiContextConstructor {
     new(...args: any[]): ApiContext;
@@ -79,7 +80,7 @@ export class ApiContext {
         })
         this.parameterList = parameterList
 
-        console.log('[------\nstart call api => ', this.api,
+        DLogger.log('[------\nstart call api => ', this.api,
             ';\nwith parameters => ', this?.parameterList,
             ';\norigin request params is => ', this?.params, '\n--------]')
         return this.api.method!.call(this.service.service, ...this.parameterList)

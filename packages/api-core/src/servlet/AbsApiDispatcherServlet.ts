@@ -5,6 +5,7 @@ import Interceptor from "../interceptor/Interceptor";
 import { Servlet } from "./Servlet";
 import Qs from 'qs'
 import { IServiceDispatchMapping } from "../service/types";
+import { DLogger } from "../common/DLogger";
 
 
 export abstract class AbsApiDispatcherServlet extends Servlet {
@@ -45,7 +46,7 @@ export abstract class AbsApiDispatcherServlet extends Servlet {
                 contents: result || {}
             }
         } else {
-            console.log('[------\nfailed for reason ', err.desc || err.message,
+            DLogger.log('[------\nfailed for reason ', err.desc || err.message,
                 ';\nerr => ', err, '\n--------]')
             if (!(err instanceof ApiException)) {
                 err = ERROR_API_UNKNOWN.withError(err)

@@ -9,7 +9,6 @@ export const METADATA_API_SECURITY = Symbol('api.security')
 export namespace Gateway {
     export const security = (security: Security): MethodDecorator => {
         return (target, propertyKey, descriptor) => {
-            // console.log('METADATA_API_SECURITY ==> ', security, propertyKey)
             Reflect.defineMetadata(METADATA_API_SECURITY, security, target, propertyKey)
         }
     }
