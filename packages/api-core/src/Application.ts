@@ -3,6 +3,7 @@ import bodyParser from 'koa-bodyparser'
 import Interceptor from './interceptor/Interceptor'
 import { IServiceLoader, ServiceLoader } from './service/ServiceLoader'
 import { GlobalDispatcherServlet } from './servlet/GlobalDispatcherServlet'
+import { RpcApiDispatcherServlet } from './servlet/RpcApiDispatcherServlet'
 import { Servlet } from './servlet/Servlet'
 
 
@@ -45,6 +46,10 @@ export class Application {
         //加载servlet
         if (this.configOptions.servlets) this.dispatcher.addServlets(this.configOptions.servlets)
         if (this.configOptions.servletDir) this.dispatcher.loadServlets(this.configOptions.servletDir)
+
+        //默认加载RpcApiDispatcherServlet，默认路由为 '/m.api'
+        if (!this.dispatcher.servletCount)
+            this.dispatcher.addServlet(new RpcApiDispatcherServlet(ServiceLoader.serviceMapping), '/m.api')
 
         //use router dispatch and start listen
         this.koa.use(this.dispatcher.dispatch())

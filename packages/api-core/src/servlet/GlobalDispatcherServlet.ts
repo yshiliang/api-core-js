@@ -39,8 +39,15 @@ export class GlobalDispatcherServlet extends Servlet {
         return this.router.routes()
     }
 
+    get servletCount() {
+        return this.servlets.length
+    }
+
     addServlet(servlet: Servlet, pattern?: string) {
-        this.servlets.push(servlet.addPattern(pattern))
+        if (pattern) servlet.addPattern(pattern)
+        if (servlet.allPatterns?.size) {
+            this.servlets.push(servlet)
+        }
     }
 
     addServlets(servlets: Servlet[]) {

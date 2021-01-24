@@ -1,8 +1,27 @@
-import { Application } from "api-core-js";
+import { Application, ConfigOptions } from "api-core-js";
 import cors = require('koa2-cors')
 import { CommonParameter } from "./CommonParameter";
+import fs from 'fs'
 
 export class GwApplication extends Application {
+    constructor(options?: ConfigOptions, projectRootDir?: string) {
+        if (projectRootDir) {
+            const config: ConfigOptions = {}
+            if (fs.existsSync(`${projectRootDir}/src/interceptors`)) {
+                config.interceptorDir = `${projectRootDir}/src/interceptors`
+            }
+            if (fs.existsSync(`${projectRootDir}/src/controllers`)) {
+                config.serviceDir = `${projectRootDir}/src/controllers`
+            }
+            if (fs.existsSync(`${projectRootDir}/src/servlets`)) {
+                config.servletDir = `${projectRootDir}/src/servlets`
+            }
+
+            options = { ...config, ...(options || {}) }
+        }
+
+        super(options)
+    }
     cors(config?: cors.Options): this {
         this.koa.use(cors({
             origin: '*',
