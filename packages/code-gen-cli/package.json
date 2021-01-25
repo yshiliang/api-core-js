@@ -1,6 +1,6 @@
 {
   "name": "api-gen-cli",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "api-gw",
   "main": "./lib/index.js",
   "types": "./lib/typings/index.d.ts",
@@ -10,7 +10,7 @@
   "dependencies": {
     "@types/js-md5": "^0.4.2",
     "api-core-js": "^0.0.5",
-    "api-gw-js": "^0.0.4",
+    "api-gw-js": "^0.0.5",
     "axios": "^0.21.1",
     "eventemitter3": "^4.0.7",
     "js-md5": "^0.7.3"

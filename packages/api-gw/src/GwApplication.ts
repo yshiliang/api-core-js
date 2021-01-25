@@ -4,17 +4,17 @@ import { CommonParameter } from "./CommonParameter";
 import fs from 'fs'
 
 export class GwApplication extends Application {
-    constructor(options?: ConfigOptions, projectRootDir?: string) {
-        if (projectRootDir) {
+    constructor(options?: ConfigOptions, entryRootDir?: string) {
+        if (entryRootDir) {
             const config: ConfigOptions = {}
-            if (fs.existsSync(`${projectRootDir}/src/interceptors`)) {
-                config.interceptorDir = `${projectRootDir}/src/interceptors`
+            if (fs.existsSync(`${entryRootDir}/interceptors`)) {
+                config.interceptorDir = `${entryRootDir}/interceptors`
             }
-            if (fs.existsSync(`${projectRootDir}/src/controllers`)) {
-                config.serviceDir = `${projectRootDir}/src/controllers`
+            if (fs.existsSync(`${entryRootDir}/src/controllers`)) {
+                config.serviceDir = `${entryRootDir}/controllers`
             }
-            if (fs.existsSync(`${projectRootDir}/src/servlets`)) {
-                config.servletDir = `${projectRootDir}/src/servlets`
+            if (fs.existsSync(`${entryRootDir}/servlets`)) {
+                config.servletDir = `${entryRootDir}/servlets`
             }
 
             options = { ...config, ...(options || {}) }
