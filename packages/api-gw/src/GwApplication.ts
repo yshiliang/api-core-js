@@ -10,7 +10,7 @@ export class GwApplication extends Application {
             if (fs.existsSync(`${entryRootDir}/interceptors`)) {
                 config.interceptorDir = `${entryRootDir}/interceptors`
             }
-            if (fs.existsSync(`${entryRootDir}/src/controllers`)) {
+            if (fs.existsSync(`${entryRootDir}/controllers`)) {
                 config.serviceDir = `${entryRootDir}/controllers`
             }
             if (fs.existsSync(`${entryRootDir}/servlets`)) {
