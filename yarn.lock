@@ -166,28 +166,6 @@ any-promise@^1.1.0:
   resolved "https://registry.yarnpkg.com/any-promise/-/any-promise-1.3.0.tgz#abc6afeedcea52e809cdc0376aed3ce39635d17f"
   integrity sha1-q8av7tzqUugJzcA3au0845Y10X8=
 
-api-core-js@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/api-core-js/-/api-core-js-0.0.4.tgz#5a19737d41daf55ad732cb992ed5ef6293ad195d"
-  integrity sha512-T9jtOxAtNhL2C3bUJHfebkqPfvit2nLIMGenmY5/y40z+XMgs11JoTbm8BETSvzGrIn3ZianPUbiM+QwK0fpIA==
-  dependencies:
-    "@types/koa" "^2.11.6"
-    "@types/koa-bodyparser" "^4.3.0"
-    "@types/koa-router" "^7.4.1"
-    koa "^2.13.1"
-    koa-bodyparser "^4.3.0"
-    koa-router "^10.0.0"
-    path-to-regexp "^6.2.0"
-    reflect-metadata "^0.1.13"
-
-api-gw-js@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/api-gw-js/-/api-gw-js-0.0.2.tgz#0322e2f813b4ccd8db0f44afc75584ce4401cb6d"
-  integrity sha512-sVFs9grNarTYMLZvKMN+lLMGa3oooLkBIqK/GRtn6tn6gBm/Jgm5/3wGZyp34TaOGJHWMirYCclXL72M0UPkyg==
-  dependencies:
-    api-core-js "^0.0.4"
-    reflect-metadata "^0.1.13"
-
 axios@^0.21.1:
   version "0.21.1"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.1.tgz#22563481962f4d6bde9a76d516ef0e5d3c09b2b8"
