@@ -65,10 +65,10 @@ export const Param = (name: string, desc?: string, required?: boolean, defaultVa
 
 //非必填参数之后必须都是非必填参数
 export const Nullable = (name: string, desc?: string) => Param(name, desc, false)
+export const Default = (name: string, defaultValue: any, desc?: string) => Param(name, desc!, false, defaultValue)
 
 //必填参数及变种
 export const Nonnull = (name: string, desc?: string, defaultValue?: any) => Param(name, desc, true, defaultValue)
-export const Default = (name: string, defaultValue: any, desc?: string) => Nonnull(name, desc!, defaultValue)
 export const PathVariable = (name: string, desc?: string) => Param(name, desc, true, undefined, true)
 export const PageIndex = (index: number = 0) => Default('pageIndex', index, '当前分页索引')
 export const PageSize = (size: number = 20) => Default('pageSize', size, '分页大小')

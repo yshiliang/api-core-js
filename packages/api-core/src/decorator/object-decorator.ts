@@ -24,6 +24,7 @@ export const JSON = (name?: string): PropertyDecorator => {
 
 export const Field: PropertyDecorator = JSON()
 
+//泛型参数为字符串时，作为泛型形参使用  如：'T'， 'U'等，与class定义的泛型形参保持一致，主要为了描述泛型类
 export const FieldGeneric = (generic: ClassType | string): PropertyDecorator => {
     return (target, propertyKey) => {
         if (typeof propertyKey === 'string') {

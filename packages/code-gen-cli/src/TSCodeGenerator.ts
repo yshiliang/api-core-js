@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor } from 'api-core-js'
+import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor, Nullable } from 'api-core-js'
 import { CommonParameter, GwApplication, GwServiceLoader, IGwApiDescriptor, IGwParameterDescriptor } from 'api-gw-js'
 import { AxiosRequestConfig } from 'axios'
 
@@ -116,19 +116,16 @@ export class TSCodeGenerator {
                     lines.push(`import ${type.name} from './POJO/${type.name}'`)
                 }
 
-                let genericName = ''
-                if (typeof generic === 'string') {
+                if (typeof generic === 'string') {//'T' 'U' 'R'等，将作为class的泛型参数
                     classGenericSet.add(generic)
-                    genericName = generic
                 } else {
                     if (isPOJO(generic!)) {
                         this.generatePOJO(generic!)
                         lines.push(`import ${generic!.name} from './POJO/${generic!.name}'`)
                     }
-                    genericName = generic?.name || ''
                 }
-                const fullType = genericName ? `${type?.name}<${genericName}>` : type?.name
-                fieldLines.push(`\t${name}?: ${fullType};`)
+
+                fieldLines.push(`\t${name}?: ${this.fullTypeString(type, generic)};`)
             }
         }
 
@@ -145,6 +142,31 @@ export class TSCodeGenerator {
         lines.push(...fieldLines)
         lines.push("}")
         this.writeLines(file, lines)
+    }
+
+    private fullTypeString(type: ClassType, generic?: ClassType | string): string {
+        let fullType = ''
+        if (type.name === String.name || type.name === Number.name) {
+            fullType = type.name.toLocaleLowerCase()
+        } else {
+            let genericName = ''
+            if (typeof generic === 'string') {//class的泛型参数'T' 'U' 'R'等
+                genericName = generic
+            } else {
+                genericName = generic?.name || ''
+            }
+
+            if (type.name === Array.name) {
+                if (genericName === String.name || genericName === Number.name) {
+                    fullType = `${genericName.toLocaleLowerCase()}[]`
+                } else {
+                    fullType = `${genericName}[]`
+                }
+            } else {
+                fullType = genericName ? `${type.name}<${genericName}>` : type.name
+            }
+        }
+        return fullType
     }
 
     /**
@@ -213,7 +235,7 @@ export class TSCodeGenerator {
         const [type, generic] = api.returnType || []
         let returnTypeStr = 'any'
         if (type) {
-            returnTypeStr = `${type.name}${generic ? `<${generic.name}>` : ''}`
+            returnTypeStr = this.fullTypeString(type, generic)
         }
 
         comments.push(api.desc!)
@@ -222,9 +244,9 @@ export class TSCodeGenerator {
             const name = param.name!
             const desc = param.desc || ''
             const defaultValue = param.defaultValue !== undefined ? `default is ${param.defaultValue}` : ''
-            const type = param.type
+            const type = param.type!
             const generic = param.genericType
-            const fullType = generic ? `${type?.name}<${generic.name}>` : type?.name
+            const fullType = this.fullTypeString(type, generic)
 
             comments.push(`@param ${name} ${desc} ${defaultValue} [${param.required ? '必填' : '非必填'}]`)
 
