@@ -138,7 +138,7 @@ export class TSCodeGenerator {
             classGeneric = classGeneric.substr(0, classGeneric.length - 2)
             classGeneric += '>'
         }
-        lines.push(`export default class ${POJO.name}${classGeneric} {`)
+        lines.push(`export default interface ${POJO.name}${classGeneric} {`)
         lines.push(...fieldLines)
         lines.push("}")
         this.writeLines(file, lines)
