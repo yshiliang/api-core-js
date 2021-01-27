@@ -9,6 +9,7 @@ export class TSCodeGenerator {
     private application: GwApplication
     private isRestfulApi: boolean = false // 默认生成JSON-RPC风格API
     private outputDir?: string //代码输出目录
+    private httpDir?: string //http client代码输出目录
     private refreshTokenApiName?: string //刷新token的apiName
 
     constructor(app: GwApplication) {
@@ -24,15 +25,16 @@ export class TSCodeGenerator {
      */
     generate(outputDir: string, defaultSecurt?: string, refreshTokenApiName?: string, isRestfulApi?: boolean) {
         this.outputDir = outputDir
+        this.httpDir = `${this.outputDir}/HTTP`
         if (isRestfulApi) this.isRestfulApi = isRestfulApi
         this.refreshTokenApiName = refreshTokenApiName
         if (fs.existsSync(outputDir)) {
             fs.rmSync(outputDir, { recursive: true })
         }
-        fs.mkdirSync(outputDir)
+        fs.mkdirSync(this.httpDir, { recursive: true })
 
         this.generateConstants(defaultSecurt)
-        fs.copyFileSync(path.resolve(__dirname, '../template/Http.ts.txt'), `${outputDir}/Http.ts`)
+        fs.copyFileSync(path.resolve(__dirname, '../template/Http.ts.txt'), `${this.httpDir}/Http.ts`)
 
         //generate api
         GwServiceLoader.serviceMapping.forEach(service => {
@@ -60,11 +62,11 @@ export class TSCodeGenerator {
                 }
             }
         })
-        const constantsFile = `${this.outputDir}/Constants.ts`
+        const constantsFile = `${this.httpDir}/Constants.ts`
         fs.writeFileSync(constantsFile, `export const CommonParameter = ${JSON.stringify(commonParameter, null, '\t')}`)
         fs.appendFileSync(constantsFile, `\n\nexport const DEFAULT_SECURT = '${defaultSecurt || ''}'`)
 
-        fs.writeFileSync(`${this.outputDir}/RefreshToken.ts`, `export const REFRESH_TOKEN_API_CONFIG = null`)
+        fs.writeFileSync(`${this.httpDir}/RefreshToken.ts`, `export const REFRESH_TOKEN_API_CONFIG = null`)
     }
 
     /**
@@ -210,7 +212,7 @@ export class TSCodeGenerator {
      */
     private startServiceToken(service: IServiceDescriptor): string[] {
         const lines: string[] = []
-        lines.push("import { HTTP } from './Http'\n\n")
+        lines.push("import { HTTP } from './HTTP/Http'\n\n")
         lines.push(...this.multiCommments([`${service.desc}`]))
         lines.push(`export default class ${service.domain}Service {`)
         return lines
@@ -266,7 +268,7 @@ export class TSCodeGenerator {
         }
 
         if (api.name === this.refreshTokenApiName) {
-            const constantsFile = `${this.outputDir}/RefreshToken.ts`
+            const constantsFile = `${this.httpDir}/RefreshToken.ts`
             const config: AxiosRequestConfig = {}
             if (this.isRestfulApi) {
                 config.url = url
