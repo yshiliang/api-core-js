@@ -109,21 +109,24 @@ export class TSCodeGenerator {
         lines.push(this.commentLine(`auto generate code for POJO class ${POJO.name} !!! \n`))
 
         const classGenericSet = new Set<string>()//泛型类
+        const depsPOJOSet = new Set<string>()//当前POJO中依赖的其它class
         const fieldLines: string[] = []
         if (mapping) {
             for (const key in mapping) {
                 const { name, type, generic } = mapping[key]
-                if (isPOJO(type)) {
-                    this.generatePOJO(type)
-                    lines.push(`import ${type.name} from './POJO/${type.name}'`)
+                if (isPOJO(type) && !depsPOJOSet.has(type.name)) {
+                    // this.generatePOJO(type)
+                    lines.push(`import ${type.name} from './${type.name}'`)
+                    depsPOJOSet.add(type.name)
                 }
 
                 if (typeof generic === 'string') {//'T' 'U' 'R'等，将作为class的泛型参数
                     classGenericSet.add(generic)
                 } else {
-                    if (isPOJO(generic!)) {
-                        this.generatePOJO(generic!)
-                        lines.push(`import ${generic!.name} from './POJO/${generic!.name}'`)
+                    if (isPOJO(generic!) && !depsPOJOSet.has(generic!.name)) {
+                        // this.generatePOJO(generic!)
+                        lines.push(`import ${generic!.name} from './${generic!.name}'`)
+                        depsPOJOSet.add(generic!.name)
                     }
                 }
 
