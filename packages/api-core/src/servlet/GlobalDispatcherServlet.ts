@@ -19,7 +19,11 @@ export class GlobalDispatcherServlet extends Servlet {
     private initRouter() {
         this.servlets.forEach(servlet => {
             servlet.allPatterns?.forEach(pattern => {
-                this.router.all(pattern, async (ctx) => {
+                this.router.get(pattern, async (ctx) => {
+                    (ctx as any).servletPattern = (ctx.request as any).servletPattern = pattern
+                    await servlet.onRequest(ctx)
+                })
+                this.router.post(pattern, async (ctx) => {
                     (ctx as any).servletPattern = (ctx.request as any).servletPattern = pattern
                     await servlet.onRequest(ctx)
                 })
