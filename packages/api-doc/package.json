@@ -3,20 +3,26 @@
   "version": "0.0.1",
   "main": "./lib/server.js",
   "types": "./lib/typings/server.d.ts",
+  "repository": "https://github.com/yshiliang/api-core-js.git",
+  "author": "y.liang",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "ssr": "node build.js && tsc"
+    "build": "tsc --noEmit && node build.js && tsc"
   },
   "dependencies": {
-    "@types/koa": "^2.11.7",
-    "@vue/server-renderer": "^3.0.5",
-    "koa": "^2.13.1",
+    "api-gw-js": "0.0.10",
+    "api-core-js": "0.0.10",
+    "koa-mount": "^4.0.0",
+    "koa-static": "^5.0.0",
     "vue": "^3.0.4"
   },
   "devDependencies": {
-    "@vue/compiler-sfc": "^3.0.4",
+    "@types/koa-mount": "^4.0.0",
+    "@types/koa-static": "^4.0.1",
+    "@vitejs/plugin-vue": "^1.1.4",
+    "@vue/compiler-sfc": "^3.0.5",
     "typescript": "^4.1.3",
-    "vite": "^1.0.0-rc.13"
+    "vite": "^2.0.0-beta.60"
   }
 }

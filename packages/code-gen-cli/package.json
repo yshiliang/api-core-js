@@ -8,11 +8,13 @@
   "author": "y.liang",
   "license": "MIT",
   "dependencies": {
-    "@types/js-md5": "^0.4.2",
     "api-core-js": "^0.0.10",
     "api-gw-js": "^0.0.10",
     "axios": "^0.21.1",
     "eventemitter3": "^4.0.7",
     "js-md5": "^0.7.3"
+  },
+  "devDependencies": {
+    "@types/js-md5": "^0.4.2"
   }
 }
