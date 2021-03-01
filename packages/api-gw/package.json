@@ -1,6 +1,6 @@
 {
   "name": "api-gw-js",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "api-gw",
   "main": "./lib/index.js",
   "types": "./lib/typings/index.d.ts",
@@ -8,7 +8,7 @@
   "author": "y.liang",
   "license": "MIT",
   "dependencies": {
-    "api-core-js": "^0.0.10",
+    "api-core-js": "^0.0.11",
     "koa2-cors": "^2.0.6",
     "reflect-metadata": "^0.1.13"
   },
