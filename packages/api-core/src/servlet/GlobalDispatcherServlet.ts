@@ -1,7 +1,6 @@
 import Router from "koa-router";
-import { ServletConstructor } from "./Servlet";
 import { ServiceLoader } from '../service/ServiceLoader'
-import { Servlet } from "./Servlet";
+import { Servlet, ServletConstructor } from "./Servlet";
 import { ApiContextConstructor } from "../common/ApiContext";
 import { isServlet, METADATA_SERVLET, METADATA_SERVLET_CONTEXT } from '../decorator/servlet-decorator'
 import { isClass, loadDefaultMoudles } from "../common/utils";

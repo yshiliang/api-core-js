@@ -11,6 +11,7 @@ export class TSCodeGenerator {
     private outputDir?: string //代码输出目录
     private httpDir?: string //http client代码输出目录
     private refreshTokenApiName?: string //刷新token的apiName
+    private generatedPOJOs = new Set<ClassType>();
 
     constructor(app: GwApplication) {
         this.application = app
@@ -94,7 +95,8 @@ export class TSCodeGenerator {
      * @param POJO 
      */
     private generatePOJO(POJO: ClassType) {
-        if (!isPOJO(POJO)) return
+        if (!isPOJO(POJO) || this.generatedPOJOs.has(POJO)) return
+        this.generatedPOJOs.add(POJO);
         const pojoDir = path.resolve(this.outputDir || __dirname, 'POJO')
         if (!fs.existsSync(pojoDir)) {
             fs.mkdirSync(pojoDir, { recursive: true })
@@ -115,7 +117,7 @@ export class TSCodeGenerator {
             for (const key in mapping) {
                 const { name, type, generic } = mapping[key]
                 if (isPOJO(type) && !depsPOJOSet.has(type.name)) {
-                    // this.generatePOJO(type)
+                    this.generatePOJO(type)
                     lines.push(`import ${type.name} from './${type.name}'`)
                     depsPOJOSet.add(type.name)
                 }
@@ -124,7 +126,7 @@ export class TSCodeGenerator {
                     classGenericSet.add(generic)
                 } else {
                     if (isPOJO(generic!) && !depsPOJOSet.has(generic!.name)) {
-                        // this.generatePOJO(generic!)
+                        this.generatePOJO(generic!)
                         lines.push(`import ${generic!.name} from './${generic!.name}'`)
                         depsPOJOSet.add(generic!.name)
                     }
@@ -151,7 +153,7 @@ export class TSCodeGenerator {
 
     private fullTypeString(type: ClassType, generic?: ClassType | string): string {
         let fullType = ''
-        if (type.name === String.name || type.name === Number.name) {
+        if (type.name === String.name || type.name === Number.name || type.name === Boolean.name) {
             fullType = type.name.toLocaleLowerCase()
         } else {
             let genericName = ''
