@@ -12,28 +12,38 @@ import { REFRESH_TOKEN_API_CONFIG } from './RefreshToken'
 // const DEFAULT_SECURT = '123456'
 // const REFRESH_TOKEN_API_CONFIG = {}
 
-class ApiError {
+const DOMIN_BIZ = '__BIZ__';
+const DOMIN_HTTP = '__HTTP__'
+export class ApiError {
     code: number;
     domain: string;
     message: string;
     error?: Error | any;
 
     constructor(code?: number, msg?: string, domain?: string) {
-        this.code = code || -1
-        this.domain = domain || 'unknown'
-        this.message = msg || '未知异常'
+        this.code = code || -1;
+        this.domain = domain || 'unknown';
+        this.message = msg || '未知异常';
     }
 
     withError(e?: Error | any): this {
-        this.error = e
-        return this
+        this.error = e;
+        return this;
+    }
+
+    isBusinessError() {
+        return this.domain === DOMIN_BIZ;
+    }
+
+    isHttpError() {
+        return this.domain === DOMIN_HTTP;
     }
 }
 
-type SECURITY = 'NONE' | 'DEVICE_REGISTER' | 'USER_LOGIN'
+type SECURITY = 'NONE' | 'DEVICE_REGISTER' | 'USER_LOGIN';
 type Params = { [k: string]: any }
 type TokenInfo = { token: string, secret: string, refreshToken: string }
-const isTokenInfo = (obj: any) => obj && obj.token && obj.secret && obj.refreshToken
+const isTokenInfo = (obj: any) => obj && obj.token && obj.secret && obj.refreshToken;
 
 const K_LOCAL_TOKEN = 'httpclient.K_LOCAL_TOKEN'
 const K_LOCAL_REFRESH_TOKEN = 'httpclient.K_LOCAL_REFRESH_TOKEN'
@@ -91,7 +101,7 @@ class HTTPClient {
 
                 return config
             }, error => {
-                return Promise.reject(new ApiError(-1, '请求错误，请重试', 'axios').withError(error))
+                return Promise.reject(new ApiError(-1, '请求错误，请重试', DOMIN_HTTP).withError(error));
             })
 
             this.instance.interceptors.response.use(response => {
@@ -102,7 +112,7 @@ class HTTPClient {
 
                 return response
             }, error => {
-                return Promise.reject(new ApiError(-1, '网络异常，请重试', 'axios').withError(error))
+                return Promise.reject(new ApiError(-1, '网络异常，请重试', DOMIN_HTTP).withError(error))
             })
         }
 
@@ -187,9 +197,6 @@ class HTTPClient {
                 e = new ApiError().withError(e)
             }
             const apiError = e as ApiError
-            if (this.onError) {
-                this.onError(apiError)
-            }
             return Promise.reject(apiError)
         })
     }
@@ -217,9 +224,7 @@ class HTTPClient {
             if (apiError.domain === 'API' && apiError.code === 406 && REFRESH_TOKEN_API_CONFIG) {
                 return this.waitingRefreshToken<T>(config)
             }
-            if (this.onError) {
-                this.onError(apiError)
-            }
+
             return Promise.reject(apiError)
         })
     }
@@ -253,11 +258,6 @@ class HTTPClient {
     }
 
     /**
-     * 统一的请求错误回调
-     */
-    onError?: (apiError: ApiError) => void
-
-    /**
      * base url
      */
     baseURL?: string
@@ -267,6 +267,10 @@ class HTTPClient {
      */
     clean() {
         this.tokenInfo = null
+    }
+
+    get isLogin() {
+        return !!this.tokenInfo.token;
     }
 }
 

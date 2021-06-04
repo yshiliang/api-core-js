@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor, Nullable } from 'api-core-js'
+import { ClassType, fieldMapping, isPOJO, IApiDescriptor, IServiceDescriptor } from 'api-core-js'
 import { CommonParameter, GwApplication, GwServiceLoader, IGwApiDescriptor, IGwParameterDescriptor } from 'api-gw-js'
 import { AxiosRequestConfig } from 'axios'
 
@@ -36,6 +36,7 @@ export class TSCodeGenerator {
 
         this.generateConstants(defaultSecurt)
         fs.copyFileSync(path.resolve(__dirname, '../template/Http.ts.txt'), `${this.httpDir}/Http.ts`)
+        fs.copyFileSync(path.resolve(__dirname, '../template/AsyncTask.ts.txt'), `${this.httpDir}/AsyncTask.ts`)
 
         //generate api
         GwServiceLoader.serviceMapping.forEach(service => {
@@ -46,7 +47,7 @@ export class TSCodeGenerator {
                 lines.push(`import ${POJO.name} from './POJO/${POJO.name}'`)
             })
             lines.push(...this.serviceLines(service))
-            this.writeLines(`${outputDir}/${service.domain}Service.ts`, lines)
+            this.writeLines(`${outputDir}/${service.domain}Api.ts`, lines)
         })
 
         console.log('api generate finished!')
@@ -219,7 +220,7 @@ export class TSCodeGenerator {
         const lines: string[] = []
         lines.push("import { HTTP } from './HTTP/Http'\n\n")
         lines.push(...this.multiCommments([`${service.desc}`]))
-        lines.push(`export default class ${service.domain}Service {`)
+        lines.push(`export default class ${service.domain}Api {`)
         return lines
     }
 

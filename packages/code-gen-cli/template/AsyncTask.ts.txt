@@ -1,0 +1,72 @@
+import to from 'await-to-js'
+import { ApiError } from './Http'
+
+export default class AsyncTask {
+    /**
+     * 统一的错误回调
+     */
+    static onError?: (reason: ApiError | any) => void
+
+    /**
+     * 执行异步任务，并响应全局错误回调
+     * @param task 待执行的任务
+     * @param ignoreOnErrorHandler 忽略错误回调，默认不忽略 
+     * @returns 
+     */
+    static async run<T = any, E = Error>(task: Promise<T>, ignoreOnErrorHandler: boolean = false) {
+        const [error, result] = await to<T, E>(task)
+        if (!ignoreOnErrorHandler && error && this.onError) {
+            this.onError(error)
+        }
+        return { error, result }
+    }
+
+    /**
+     * 执行异步任务，不响应全局错误回调
+     * @param task 
+     * @returns 
+     */
+    static async runOnBackground<T = any, E = Error>(task: Promise<T>) {
+        return this.run<T, E>(task, true)
+    }
+
+    /**
+     * 批量执行后台任务
+     * @param tasks 待执行的任务
+     * @returns 
+     */
+    static async runAllOnBackground(...tasks: Promise<any>[]) {
+        return Promise.all(tasks.map(t => {
+            return this.runOnBackground(t)
+        }))
+    }
+
+    /**
+     * 执行网络请求相关异步任务，并响应全局错误回调
+     * @param task http task
+     * @returns 
+     */
+    static async runHttpTask<T = any>(task: Promise<T>) {
+        return this.run<T, ApiError>(task)
+    }
+
+    /**
+     * 执行网络请求相关异步任务，不响应全局错误回调
+     * @param task http task
+     * @returns 
+     */
+    static async runHttpTaskOnBackground<T = any>(task: Promise<T>) {
+        return this.run<T, ApiError>(task, true)
+    }
+
+    /**
+     * 批量执行网络请求相关后台任务
+     * @param tasks 待执行的任务
+     * @returns 
+     */
+    static async runAllHttpTaskOnBackground(...tasks: Promise<any>[]) {
+        return Promise.all(tasks.map(t => {
+            return this.runHttpTaskOnBackground(t)
+        }))
+    }
+}
